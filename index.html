@@ -154,11 +154,28 @@
           </datalist>
         </div>
         <div>
-          <label for="broker">Platforma / Broker</label>
-          <input id="broker" list="brokers" placeholder="XTB, MT5, TradingView…">
-          <datalist id="brokers">
-            <option>XTB</option><option>MT4</option><option>MT5</option><option>cTrader</option><option>TradingView</option>
-            <option>eToro</option>
+          <label for="broker">Vyber brokera / platformu:</label>
+<select id="broker">
+  <option value="xtb">XTB</option>
+  <option value="etoro">eToro</option>
+  <option value="degiro">Degiro</option>
+  <option value="ib">Interactive Brokers</option>
+  <option value="t212">Trading212</option>
+  <option value="plus500">Plus500</option>
+  <option value="robinhood">Robinhood</option>
+  <option value="saxo">Saxo Bank</option>
+  <option value="fxcm">FXCM</option>
+  <option value="pepperstone">Pepperstone</option>
+  <option value="ava">AvaTrade</option>
+  <option value="ig">IG Markets</option>
+  <option value="cmc">CMC Markets</option>
+  <option value="mt4">MetaTrader 4 (MT4)</option>
+  <option value="mt5">MetaTrader 5 (MT5)</option>
+  <option value="other">Jiný (napiš níže)</option>
+</select>
+
+<!-- Textové pole pro zadání vlastního brokera -->
+<input type="text" id="customBroker" placeholder="Zadej jiného brokera / platformu">
           </datalist>
         </div>
         <div>
