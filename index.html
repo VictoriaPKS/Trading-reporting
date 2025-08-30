@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0f1220">
+  <link rel="manifest" href="manifest.webmanifest">
+  <title>Trading Report – Demo (10 dní)</title>
+  <style>
+    :root{
+      --bg:#0f1220;
+      --panel:#151A2B;
+      --panel-2:#101425;
+      --muted:#a9b0c3;
+      --text:#e8ecf7;
+      --accent:#7aa2ff;
+      --accent-2:#9cffd0;
+      --danger:#ff6b6b;
+      --ok:#4cd97b;
+      --warn:#ffd36e;
+      --radius:16px;
+      --radius-sm:12px;
+      --gap:14px;
+      --border: 1px solid rgba(255,255,255,0.08);
+      --chip: rgba(122,162,255,0.12);
+      --chip-2: rgba(156,255,208,0.12);
+      --chip-warn: rgba(255,211,110,0.15);
+      --shadow: 0 12px 30px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.04);
+      --shadow-sm: 0 6px 16px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.04);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, 'Helvetica Neue', Arial, 'Apple Color Emoji','Segoe UI Emoji';
+      background:
+        radial-gradient(1000px 600px at 100% -10%, rgba(122,162,255,0.15), transparent),
+        radial-gradient(1000px 600px at -10% 100%, rgba(156,255,208,0.16), transparent),
+        var(--bg);
+      color:var(--text);
+      line-height:1.45;
+      padding-bottom: calc(80px + env(safe-area-inset-bottom));
+    }
+    header{
+      padding:22px 16px 10px;
+      position:sticky; top:0; z-index:5;
+      background: linear-gradient(#0f1220 0%, rgba(15,18,32,0.9) 60%, rgba(15,18,32,0));
+      backdrop-filter: blur(6px);
+    }
+    h1{
+      font-weight:800; font-size:22px; margin:0 0 6px 0; letter-spacing:0.3px;
+      display:flex; align-items:center; gap:10px;
+    }
+    .badge{
+      font-size:12px; color:var(--muted); background:var(--chip);
+      padding:4px 8px; border-radius:999px; border:var(--border);
+    }
+    .wrap{padding:0 16px; max-width:900px; margin:0 auto;}
+    .panel{
+      background:linear-gradient(180deg, var(--panel), var(--panel-2));
+      border:var(--border); border-radius:var(--radius); box-shadow:var(--shadow); padding:14px;
+    }
+    .controls{ display:grid; gap:10px; grid-template-columns: 1fr 1fr; }
+    .controls .full{ grid-column: 1 / -1; }
+    label{ font-size:12px; color:var(--muted); display:block; margin-bottom:6px;}
+    input, select, textarea, button{
+      width:100%; padding:12px 12px; border-radius:12px; border:var(--border);
+      background:#0e1223; color:var(--text); box-shadow:var(--shadow-sm);
+      outline:none;
+    }
+    input[type="date"], input[type="time"], input[type="number"]{ padding:10px 12px; }
+    textarea{ min-height:80px; resize:vertical; }
+    button{
+      background: linear-gradient(180deg, #1b2240, #101533);
+      color: var(--text); border:1px solid rgba(122,162,255,0.45); font-weight:600;
+    }
+    button.ghost{
+      background: transparent; border:var(--border);
+    }
+    button.danger{ border-color: rgba(255,107,107,0.5); background: linear-gradient(180deg, #3a1a1a, #2a1212); }
+    .grid-3{ display:grid; gap:10px; grid-template-columns: repeat(3, 1fr); }
+    .grid-2{ display:grid; gap:10px; grid-template-columns: repeat(2, 1fr); }
+    .chips{ display:flex; gap:8px; flex-wrap:wrap; }
+    .chip{ background:var(--chip); padding:6px 10px; border-radius:999px; font-size:12px; border:var(--border); }
+    .list{ margin-top:14px; display:grid; gap:10px; }
+    .row{
+      display:grid; grid-template-columns: auto 1fr auto; gap:10px; align-items:center;
+      padding:10px; border-radius:12px; background:#0d1120; border:var(--border);
+    }
+    .row .date{ font-size:12px; color:var(--muted); }
+    .row .title{ font-weight:600; }
+    .row .pnl.win{ color:var(--ok); }
+    .row .pnl.lose{ color:var(--danger); }
+    .row .actions{ display:flex; gap:8px; }
+    .kpis{ display:grid; gap:10px; grid-template-columns: repeat(2,1fr); margin-top:14px;}
+    .kpi{ padding:12px; border-radius:14px; border:var(--border); background:#0d1120;}
+    .kpi .v{ font-size:20px; font-weight:800; margin-top:2px;}
+    .sections{ display:grid; gap:12px; margin-top:16px;}
+    .bar{
+      height:10px; border-radius:8px; background: rgba(255,255,255,0.07); overflow:hidden;
+    }
+    .bar > i{ display:block; height:100%; background: var(--accent); }
+    .hint{ color:var(--muted); font-size:12px; }
+    .footer{
+      position: fixed; bottom: 10px; left: 0; right: 0;
+      display:flex; justify-content:center; pointer-events:none;
+    }
+    .footer .dock{
+      pointer-events:auto;
+      display:flex; gap:8px; background: rgba(10,13,26,0.8);
+      padding:8px; border-radius:999px; border:var(--border); backdrop-filter: blur(6px);
+    }
+    @media (min-width: 680px){
+      .controls{ grid-template-columns: repeat(4, 1fr); }
+      .kpis{ grid-template-columns: repeat(4,1fr); }
+    }
+  </style>
+</head>
+<body>
+  <header class="wrap">
+    <h1>Trading Report <span class="badge">Demo • 10 dní</span></h1>
+    <div class="chips">
+      <span class="chip">Offline</span>
+      <span class="chip">Uloženo v telefonu</span>
+      <span class="chip">Instalace jako aplikace</span>
+    </div>
+  </header>
+
+  <main class="wrap sections">
+    <section class="panel" id="formPanel">
+      <div class="controls">
+        <div class="full">
+          <label for="date">Datum</label>
+          <input id="date" type="date">
+        </div>
+        <div>
+          <label for="instrument">Instrument</label>
+          <input id="instrument" list="instruments" placeholder="EUR/USD, DAX, Zlato…">
+          <datalist id="instruments">
+            <option>EUR/USD</option><option>GBP/USD</option><option>USD/JPY</option>
+            <option>DAX</option><option>US100</option><option>SPX500</option>
+            <option>XAUUSD (zlato)</option><option>WTI (ropa)</option>
+            <option>BTCUSD</option>
+          </datalist>
+        </div>
+        <div>
+          <label for="partner">S kým</label>
+          <input id="partner" list="partners" placeholder="Sama, mentor, komunita…">
+          <datalist id="partners">
+            <option>Sama</option><option>Mentor</option><option>Komunita/Discord</option><option>Kurz</option>
+          </datalist>
+        </div>
+        <div>
+          <label for="broker">Platforma / Broker</label>
+          <input id="broker" list="brokers" placeholder="XTB, MT5, TradingView…">
+          <datalist id="brokers">
+            <option>XTB</option><option>MT4</option><option>MT5</option><option>cTrader</option><option>TradingView</option>
+            <option>eToro</option>
+          </datalist>
+        </div>
+        <div>
+          <label for="trades">Obchody (počet)</label>
+          <input id="trades" type="number" inputmode="numeric" min="0" step="1" placeholder="0">
+        </div>
+        <div>
+          <label for="pnl">P/L</label>
+          <input id="pnl" type="number" inputmode="decimal" step="0.01" placeholder="0">
+        </div>
+        <div>
+          <label for="session">Čas dne</label>
+          <select id="session">
+            <option value="">–</option>
+            <option>Ráno</option><option>Dopoledne</option><option>Odpoledne</option><option>Večer</option><option>Noc</option>
+          </select>
+        </div>
+        <div>
+          <label for="start">Od</label>
+          <input id="start" type="time">
+        </div>
+        <div>
+          <label for="end">Do</label>
+          <input id="end" type="time">
+        </div>
+        <div>
+          <label for="mood">Emoce</label>
+          <select id="mood">
+            <option value="">–</option>
+            <option>Klidná</option><option>Soustředěná</option><option>Nervózní</option><option>Unavená</option>
+            <option>Euforie</option><option>Frustrace</option>
+          </select>
+        </div>
+        <div class="full">
+          <label for="note">Poznámka</label>
+          <textarea id="note" placeholder="Co fungovalo / co ne"></textarea>
+        </div>
+        <input id="editingId" type="hidden" value="">
+        <div class="grid-2 full">
+          <button id="saveBtn">Uložit / aktualizovat</button>
+          <button class="ghost" id="clearForm">Vyčistit formulář</button>
+        </div>
+        <div class="grid-3 full">
+          <button class="ghost" id="exportJson">Export JSON</button>
+          <button class="ghost" id="exportCsv">Export CSV</button>
+          <label class="ghost" style="display:flex;align-items:center;justify-content:center;gap:8px">
+            Import JSON
+            <input id="importJson" type="file" accept=".json" style="display:none">
+          </label>
+        </div>
+        <div class="grid-2 full">
+          <button class="danger" id="resetData">Smazat všechna data</button>
+          <button class="ghost" id="installHint">Jak nainstalovat do telefonu</button>
+        </div>
+        <div class="full hint">
+          Tip: doporučuji jednu měnu pro P/L (např. CZK nebo EUR), ať součty dávají smysl.
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="grid-2">
+        <div>
+          <label>Filtrovat</label>
+          <select id="filterRange">
+            <option value="all">Vše</option>
+            <option value="10d">Posledních 10 dní</option>
+            <option value="10s">Posledních 10 sezení</option>
+          </select>
+        </div>
+        <div>
+          <label>Řazení</label>
+          <select id="sortBy">
+            <option value="dateDesc">Datum ↓</option>
+            <option value="dateAsc">Datum ↑</option>
+            <option value="pnlDesc">P/L ↓</option>
+            <option value="pnlAsc">P/L ↑</option>
+            <option value="tradesDesc">Obchody ↓</option>
+            <option value="tradesAsc">Obchody ↑</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="kpis">
+        <div class="kpi">
+          <div class="t">Celkový P/L</div>
+          <div class="v" id="kpiPnl">0</div>
+        </div>
+        <div class="kpi">
+          <div class="t">Počet obchodů</div>
+          <div class="v" id="kpiTrades">0</div>
+        </div>
+        <div class="kpi">
+          <div class="t">Win rate</div>
+          <div class="v" id="kpiWin">–</div>
+        </div>
+        <div class="kpi">
+          <div class="t">Sezení</div>
+          <div class="v" id="kpiSessions">0</div>
+        </div>
+      </div>
+
+      <div class="sections">
+        <div class="panel" style="background:#0b0f1e">
+          <div style="font-weight:700; margin-bottom:6px">S kým se ti dařilo</div>
+          <div id="byPartner"></div>
+        </div>
+        <div class="panel" style="background:#0b0f1e">
+          <div style="font-weight:700; margin-bottom:6px">Která část dne funguje</div>
+          <div id="bySession"></div>
+        </div>
+        <div class="panel" style="background:#0b0f1e">
+          <div style="font-weight:700; margin-bottom:6px">Instrumenty</div>
+          <div id="byInstrument"></div>
+        </div>
+      </div>
+
+      <div class="list" id="list"></div>
+    </section>
+  </main>
+
+  <div class="footer">
+    <div class="dock">
+      <button id="newBtn">Nový záznam</button>
+      <button id="scrollTop">Na začátek</button>
+    </div>
+  </div>
+
+  <dialog id="howTo">
+    <div class="wrap" style="padding:16px;">
+      <h3>Instalace do telefonu</h3>
+      <ol>
+        <li><strong>Hostuj</strong> složku na webu (např. GitHub Pages / Netlify zdarma).</li>
+        <li>Na <strong>Androidu (Chrome)</strong>: otevři odkaz → Menu (⋮) → <em>Přidat na plochu</em>.</li>
+        <li>Na <strong>iPhonu (Safari)</strong>: otevři odkaz → <em>Share</em> (čtvereček se šipkou) → <em>Add to Home Screen</em>.</li>
+      </ol>
+      <p class="hint">Aplikace běží offline a ukládá data jen do tvého zařízení (localStorage).</p>
+      <div style="display:flex; gap:8px; margin-top:10px">
+        <button id="closeHowTo">Zavřít</button>
+      </div>
+    </div>
+  </dialog>
+
+  <script>
+    // ---- PWA registration ----
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(()=>{});
+      });
+    }
+
+    // ---- Helpers ----
+    const $ = sel => document.querySelector(sel);
+    const $$ = sel => Array.from(document.querySelectorAll(sel));
+    const fmt = n => (n===0 ? "0" : (Math.round((n + Number.EPSILON)*100)/100).toString());
+    const todayISO = () => new Date().toISOString().slice(0,10);
+
+    const store = {
+      key:'tj_entries',
+      get(){ try{ return JSON.parse(localStorage.getItem(this.key)) || [] }catch{ return [] } },
+      set(v){ localStorage.setItem(this.key, JSON.stringify(v)) }
+    };
+
+    function readForm(){
+      return {
+        id: $('#editingId').value || String(Date.now()),
+        date: $('#date').value || todayISO(),
+        instrument: $('#instrument').value.trim(),
+        partner: $('#partner').value.trim(),
+        broker: $('#broker').value.trim(),
+        trades: Number($('#trades').value || 0),
+        pnl: Number($('#pnl').value || 0),
+        session: $('#session').value,
+        start: $('#start').value,
+        end: $('#end').value,
+        mood: $('#mood').value,
+        note: $('#note').value.trim()
+      };
+    }
+    function fillForm(e){
+      $('#editingId').value = e.id || '';
+      $('#date').value = e.date || todayISO();
+      $('#instrument').value = e.instrument || '';
+      $('#partner').value = e.partner || '';
+      $('#broker').value = e.broker || '';
+      $('#trades').value = e.trades ?? 0;
+      $('#pnl').value = e.pnl ?? 0;
+      $('#session').value = e.session || '';
+      $('#start').value = e.start || '';
+      $('#end').value = e.end || '';
+      $('#mood').value = e.mood || '';
+      $('#note').value = e.note || '';
+      window.scrollTo({top:0, behavior:'smooth'});
+    }
+    function clearForm(){
+      fillForm({id:'', date:todayISO(), instrument:'', partner:'', broker:'XTB', trades:0, pnl:0, session:'', start:'', end:'', mood:'', note:''});
+    }
+
+    function saveEntry(){
+      const e = readForm();
+      const arr = store.get();
+      const i = arr.findIndex(x => x.id === e.id);
+      if(i>=0) arr[i] = e; else arr.push(e);
+      store.set(arr);
+      clearForm(); render();
+    }
+    function deleteEntry(id){
+      const arr = store.get().filter(x => x.id !== id);
+      store.set(arr); render();
+    }
+
+    function sortEntries(arr, how){
+      const map = {
+        dateDesc:(a,b)=> b.date.localeCompare(a.date),
+        dateAsc:(a,b)=> a.date.localeCompare(b.date),
+        pnlDesc:(a,b)=> b.pnl - a.pnl,
+        pnlAsc:(a,b)=> a.pnl - b.pnl,
+        tradesDesc:(a,b)=> b.trades - a.trades,
+        tradesAsc:(a,b)=> a.trades - b.trades,
+      };
+      return arr.sort(map[how] || map.dateDesc);
+    }
+
+    function filterEntries(arr){
+      const mode = $('#filterRange').value;
+      if(mode==='10d'){
+        const ten = new Date(); ten.setDate(ten.getDate()-9);
+        const d0 = ten.toISOString().slice(0,10);
+        return arr.filter(x => x.date >= d0);
+      }
+      if(mode==='10s'){
+        return arr.slice(-10);
+      }
+      return arr;
+    }
+
+    function groupBy(arr, key){
+      const m = {};
+      arr.forEach(e => {
+        const k = (e[key] || '—');
+        if(!m[k]) m[k] = [];
+        m[k].push(e);
+      });
+      return m;
+    }
+
+    function computeKpis(arr){
+      const totalPnl = arr.reduce((s,e)=>s+Number(e.pnl||0),0);
+      const trades = arr.reduce((s,e)=>s+Number(e.trades||0),0);
+      const wins = arr.filter(e => Number(e.pnl)>0).length;
+      const sessions = arr.length;
+      return { totalPnl, trades, wins, sessions, winRate: sessions? Math.round(100*wins/sessions): 0 };
+    }
+
+    function renderBars(target, groups){
+      const container = document.createElement('div');
+      container.style.display = 'grid'; container.style.gap = '8px';
+      const avgs = Object.entries(groups).map(([k, list]) => {
+        const avg = list.reduce((s,e)=>s+Number(e.pnl||0),0) / (list.length || 1);
+        return {k, avg, n:list.length};
+      }).sort((a,b)=>b.avg - a.avg);
+      const max = Math.max(1, ...avgs.map(x=>Math.abs(x.avg)));
+      avgs.forEach(x => {
+        const row = document.createElement('div');
+        row.innerHTML = `<div style="display:flex;justify-content:space-between;font-size:13px">
+          <span>${x.k} <span class="hint">(${x.n})</span></span>
+          <b style="color:${x.avg>=0?'var(--ok)':'var(--danger)'}">${fmt(x.avg)}</b>
+        </div>
+        <div class="bar"><i style="width:${Math.min(100, Math.round(100*Math.abs(x.avg)/max))}%; background:${x.avg>=0?'var(--accent-2)':'var(--danger)'}"></i></div>`;
+        container.appendChild(row);
+      });
+      target.innerHTML=''; target.appendChild(container);
+    }
+
+    function render(){
+      const raw = store.get().sort((a,b)=> a.date.localeCompare(b.date));
+      const sorted = sortEntries([...raw], $('#sortBy').value);
+      const data = filterEntries(sorted);
+
+      const k = computeKpis(data);
+      $('#kpiPnl').textContent = fmt(k.totalPnl);
+      $('#kpiTrades').textContent = String(k.trades);
+      $('#kpiWin').textContent = (k.sessions? k.winRate + '%' : '–');
+      $('#kpiSessions').textContent = String(k.sessions);
+
+      renderBars($('#byPartner'), groupBy(data, 'partner'));
+      renderBars($('#bySession'), groupBy(data, 'session'));
+      renderBars($('#byInstrument'), groupBy(data, 'instrument'));
+
+      const list = $('#list'); list.innerHTML = '';
+      data.forEach(e => {
+        const div = document.createElement('div');
+        div.className='row';
+        const pnlClass = (Number(e.pnl)>=0) ? 'win' : 'lose';
+        div.innerHTML = `
+          <div>
+            <div class="title">${e.instrument || '—'}</div>
+            <div class="date">${e.date} • ${e.session || '—'} • ${e.partner || '—'}</div>
+          </div>
+          <div class="pnl ${pnlClass}"><b>${fmt(Number(e.pnl)||0)}</b></div>
+          <div class="actions">
+            <button data-act="edit">Upravit</button>
+            <button class="danger" data-act="del">Smazat</button>
+          </div>`;
+        div.querySelector('[data-act="edit"]').addEventListener('click', ()=> fillForm(e));
+        div.querySelector('[data-act="del"]').addEventListener('click', ()=> {
+          if(confirm('Opravdu smazat tento záznam?')) deleteEntry(e.id);
+        });
+        list.appendChild(div);
+      });
+    }
+
+    // ---- Export / Import ----
+    function download(filename, text){
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([text], {type:'text/plain'}));
+      a.download = filename; a.click();
+      setTimeout(()=> URL.revokeObjectURL(a.href), 1000);
+    }
+    function toCsv(arr){
+      const header = ["date","instrument","partner","broker","trades","pnl","session","start","end","mood","note"];
+      const rows = arr.map(e => header.map(k => {
+        const v = (e[k] ?? "").toString().replace(/"/g,'""');
+        return `"${v}"`;
+      }).join(','));
+      return [header.join(','), ...rows].join('\n');
+    }
+
+    // ---- Wire up ----
+    $('#date').value = todayISO();
+    clearForm();
+    $('#saveBtn').addEventListener('click', saveEntry);
+    $('#clearForm').addEventListener('click', clearForm);
+    $('#filterRange').addEventListener('change', render);
+    $('#sortBy').addEventListener('change', render);
+    $('#newBtn').addEventListener('click', clearForm);
+    $('#scrollTop').addEventListener('click', ()=> window.scrollTo({top:0, behavior:'smooth'}));
+
+    $('#exportJson').addEventListener('click', ()=> download('trading-report.json', JSON.stringify(store.get(), null, 2)));
+    $('#exportCsv').addEventListener('click', ()=> download('trading-report.csv', toCsv(store.get())));
+    $('#importJson').addEventListener('change', (ev)=>{
+      const file = ev.target.files[0]; if(!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try{
+          const data = JSON.parse(reader.result);
+          if(Array.isArray(data)){ store.set(data); render(); alert('Import hotový ✅'); }
+          else{ alert('Soubor neobsahuje pole záznamů.'); }
+        }catch(e){ alert('Chyba při čtení JSONu.'); }
+      };
+      reader.readAsText(file);
+      ev.target.value = '';
+    });
+    $('#resetData').addEventListener('click', ()=>{
+      if(confirm('Smazat VŠECHNA data v této aplikaci?')){ localStorage.removeItem(store.key); render(); }
+    });
+    $('#installHint').addEventListener('click', ()=> $('#howTo').showModal());
+    $('#closeHowTo').addEventListener('click', ()=> $('#howTo').close());
+
+    render();
+  </script>
+</body>
+</html>
