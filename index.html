@@ -40,7 +40,43 @@
   <link rel="manifest" href="manifest.webmanifest">
   <title>Trading Report – Demo (10 dní)</title>
   <style>
-    :root{
+  :root {
+    --bg:#0f1220;
+    --panel:#151A2B;
+    --panel-2:#101425;
+    --muted:#a9b0c3;
+    --text:#e8ecf7;
+    --accent:#7aa2ff;
+  }
+
+  /* --- FIX pro iPhone notch a header --- */
+  body {
+    margin: 0;
+    padding-top: env(safe-area-inset-top);
+  }
+
+  header {
+    padding: calc(env(safe-area-inset-top) + 12px) 12px 12px 12px;
+    text-align: center;
+    background: rgba(0,0,0,0.3);
+    color: white;
+  }
+
+  header h1 {
+    margin: 0;
+    font-size: 20px;
+  }
+
+  header button {
+    margin-top: 6px;
+    padding: 6px 12px;
+    border: none;
+    border-radius: 6px;
+    background: #1a73e8;
+    color: white;
+    font-size: 14px;
+  }
+</style>
       --bg:#0f1220;
       --panel:#151A2B;
       --panel-2:#101425;
